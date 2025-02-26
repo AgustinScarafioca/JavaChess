@@ -249,7 +249,7 @@ public class GamePanel extends JPanel implements Runnable{
 			
 			checkCastling();
 			
-			if(isIllegal(activeP) == false) {
+			if(isIllegal(activeP) == false && opponentCanCaptureKing() == false) {
 				validSquare = true;
 			}
 		}
@@ -263,6 +263,18 @@ public class GamePanel extends JPanel implements Runnable{
 				}
 			}
 		}
+		return false;
+	}
+	private boolean opponentCanCaptureKing() {
+		
+		Piece king = getKing(false);
+		
+		for(Piece piece : simPieces) {
+			if(piece.color != king.color && piece.canMove(king.col, king.row)) {
+				return true;
+			}
+		}
+		
 		return false;
 	}
 	private boolean isKingInCheck() {
@@ -379,7 +391,7 @@ public class GamePanel extends JPanel implements Runnable{
 		
 		if(activeP != null) {
 			if(canMove) {
-				if(isIllegal(activeP)) {
+				if(isIllegal(activeP) || opponentCanCaptureKing()) {
 					g2.setColor(Color.gray);
 					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
 					g2.fillRect(activeP.col*Board.SQUARE_SIZE, activeP.row*Board.SQUARE_SIZE, Board.SQUARE_SIZE, Board.SQUARE_SIZE);
