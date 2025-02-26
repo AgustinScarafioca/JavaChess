@@ -33,6 +33,7 @@ public class GamePanel extends JPanel implements Runnable{
 	public static ArrayList<Piece> simPieces = new ArrayList<>();
 	//handle current user piece
 	Piece activeP;
+	public static Piece castlingP;
 	
 	//COLOR
 	public static final int WHITE = 0;
@@ -72,11 +73,11 @@ public class GamePanel extends JPanel implements Runnable{
 		pieces.add(new Pawn(WHITE, 7, 6));
 		pieces.add(new Rook(WHITE, 0, 7));
 		pieces.add(new Rook(WHITE, 7, 7));
-		pieces.add(new Knight(WHITE, 1, 7));
-		pieces.add(new Knight(WHITE, 6, 7));
-		pieces.add(new Bishop(WHITE, 2, 7));
-		pieces.add(new Bishop(WHITE, 5, 7));
-		pieces.add(new Queen(WHITE, 3, 7));
+		//pieces.add(new Knight(WHITE, 1, 7));
+		//pieces.add(new Knight(WHITE, 6, 7));
+		//pieces.add(new Bishop(WHITE, 2, 7));
+		//pieces.add(new Bishop(WHITE, 5, 7));
+		//pieces.add(new Queen(WHITE, 3, 7));
 		pieces.add(new King(WHITE, 4, 7));
 
 		//Black team
@@ -151,11 +152,15 @@ public class GamePanel extends JPanel implements Runnable{
 		if(mouse.pressed == false) {
 			if(activeP != null) {
 				if(validSquare) {
+					
 					//MOVE CONFIRMED
 					
 					// update pieces list in case of captured and removed in simulation
 					copyPieces(simPieces, pieces);
 					activeP.updatePosition();
+					if(castlingP != null) {
+						castlingP.updatePosition();
+					}
 					
 					changePlayer();
 				}
@@ -177,6 +182,13 @@ public class GamePanel extends JPanel implements Runnable{
 		// Restoring the removed piece during the simulation
 		copyPieces(pieces, simPieces);
 		
+		//Reset the castling piece's position
+		if(castlingP != null ) {
+			castlingP.col = castlingP.preCol;
+			castlingP.x = castlingP.getX(castlingP.col);
+			castlingP = null;
+		}
+		
 		//kind of a thinking phase
 		activeP.x = mouse.x - Board.HALF_SQUARE_SIZE;
 		activeP.y = mouse.y - Board.HALF_SQUARE_SIZE;
@@ -191,7 +203,21 @@ public class GamePanel extends JPanel implements Runnable{
 			if(activeP.hittingP != null) {
 				simPieces.remove(activeP.hittingP.getIndex());
 			}
+			
+			checkCastling();
+			
 			validSquare = true;
+		}
+	}
+	private void checkCastling() {
+		if(castlingP != null) {
+			if(castlingP.col == 0) {
+				castlingP.col +=3;
+			}
+			else if (castlingP.col == 7) {
+				castlingP.col -=2;
+			}
+			castlingP.x =castlingP.getX(castlingP.col);
 		}
 	}
 	private void changePlayer() {
