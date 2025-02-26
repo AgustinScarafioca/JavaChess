@@ -54,7 +54,8 @@ public class GamePanel extends JPanel implements Runnable{
 		addMouseListener(mouse);
 
 		//setPieces();
-		testPromotion();
+		//testPromotion();
+		testIllegal();
 		copyPieces(pieces, simPieces);
 		
 	}
@@ -76,11 +77,11 @@ public class GamePanel extends JPanel implements Runnable{
 		pieces.add(new Pawn(WHITE, 7, 6));
 		pieces.add(new Rook(WHITE, 0, 7));
 		pieces.add(new Rook(WHITE, 7, 7));
-		//pieces.add(new Knight(WHITE, 1, 7));
-		//pieces.add(new Knight(WHITE, 6, 7));
-		//pieces.add(new Bishop(WHITE, 2, 7));
-		//pieces.add(new Bishop(WHITE, 5, 7));
-		//pieces.add(new Queen(WHITE, 3, 7));
+		pieces.add(new Knight(WHITE, 1, 7));
+		pieces.add(new Knight(WHITE, 6, 7));
+		pieces.add(new Bishop(WHITE, 2, 7));
+		pieces.add(new Bishop(WHITE, 5, 7));
+		pieces.add(new Queen(WHITE, 3, 7));
 		pieces.add(new King(WHITE, 4, 7));
 
 		//Black team
@@ -104,6 +105,14 @@ public class GamePanel extends JPanel implements Runnable{
 	public void testPromotion() {
 		pieces.add(new Pawn(WHITE, 0, 4));
 		pieces.add(new Pawn(BLACK, 5, 4));
+	}
+	public void testIllegal() {
+		pieces.add(new Pawn(WHITE, 7, 6));
+		pieces.add(new King(WHITE, 3, 7));
+		pieces.add(new King(BLACK, 0, 3));
+		pieces.add(new Bishop(BLACK, 1, 4));
+		pieces.add(new Queen(BLACK, 4, 5));
+
 	}
 	private void copyPieces(ArrayList<Piece> source, ArrayList<Piece> target) {
 		target.clear();
@@ -226,8 +235,21 @@ public class GamePanel extends JPanel implements Runnable{
 			
 			checkCastling();
 			
-			validSquare = true;
+			if(isIllegal(activeP) == false) {
+				validSquare = true;
+			}
 		}
+	}
+	private boolean isIllegal(Piece king) {
+		
+		if(king.type == Type.KING) {
+			for(Piece piece : simPieces) {
+				if(piece != king && piece.color != king.color && piece.canMove(king.col, king.row)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	private void checkCastling() {
 		if(castlingP != null) {
@@ -311,11 +333,19 @@ public class GamePanel extends JPanel implements Runnable{
 		
 		if(activeP != null) {
 			if(canMove) {
-				g2.setColor(Color.white);
-				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
-				g2.fillRect(activeP.col*Board.SQUARE_SIZE, activeP.row*Board.SQUARE_SIZE, Board.SQUARE_SIZE, Board.SQUARE_SIZE);
-				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+				if(isIllegal(activeP)) {
+					g2.setColor(Color.gray);
+					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
+					g2.fillRect(activeP.col*Board.SQUARE_SIZE, activeP.row*Board.SQUARE_SIZE, Board.SQUARE_SIZE, Board.SQUARE_SIZE);
+					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+				} else {
+					g2.setColor(Color.white);
+					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
+					g2.fillRect(activeP.col*Board.SQUARE_SIZE, activeP.row*Board.SQUARE_SIZE, Board.SQUARE_SIZE, Board.SQUARE_SIZE);
+					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+				}
 			}
+			
 
 			//Draw active piece in the end so it won't be hidden by board or colored square
 			activeP.draw(g2);
